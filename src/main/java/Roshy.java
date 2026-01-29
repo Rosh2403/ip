@@ -9,7 +9,7 @@ public class Roshy {
                 + "|_|  |_|\\__,_|_|  |_|\\___/ \n";
         System.out.println(logo + " Hello I'm Roshy\n What can I do for you?\n");
         Scanner in = new Scanner(System.in);
-        String[] lister = new String[100];
+        Task[] lister = new Task[100];
         String separator = "    ____________________________________________________________";
 
         int index = 0;
@@ -25,15 +25,23 @@ public class Roshy {
                 if(index == 0) {
                     System.out.println("No tasks yet!");
                 }
-                for(int i = 0; i < index; i++){
-                    System.out.println((i+1) + ": " + lister[i]);
+                else {
+                    System.out.println("Here are the tasks in your list\n");
+                    for (int i = 0; i < index; i++) {
+                        System.out.println((i + 1) + ": " + "[" + lister[i].getStatusIcon() + "] " + lister[i].description);
+                    }
                 }
             }
             else if(line.equals("Mario")){
                 System.out.println(separator +"\n" + "Mario? MArioooooo LUIGIIIII MARIOOOO LUGIII MARIO" + logo + logo);
             }
+            else if(line.startsWith("mark")){
+                int taskNum = Integer.parseInt(line.substring(5)) - 1;
+                lister[taskNum].markAsDone();
+                System.out.println("Nice Ive marked this as done!\n" + "[" + lister[taskNum].getStatusIcon() +"] " + lister[taskNum].description);
+            }
             else{
-                lister[index] = line;
+                lister[index] = new Task(line);
                 index++;
                 System.out.println("added: " + line);
             }
@@ -43,6 +51,7 @@ public class Roshy {
             }
         }
         System.out.println("BYEEE ITS Super Smash BROS TIME");
-
     }
 }
+
+
