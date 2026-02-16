@@ -9,9 +9,9 @@ public class Event extends Task{
     public String getToWhen(){
         return toWhen;
     }
-    public Event(String description, String fromWhen, String toWhen){
+    public Event(String description, String toWhen, String forWhen){
         super(description);
-        this.fromWhen = fromDate;
-        this.toWhen = toDate;
+        this.fromWhen = forWhen;
+        this.toWhen = toWhen;
     }
 }
