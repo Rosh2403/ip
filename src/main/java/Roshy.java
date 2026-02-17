@@ -1,3 +1,4 @@
+
 import java.util.Scanner;
 
 public class Roshy {
@@ -53,22 +54,27 @@ public class Roshy {
     }
 
     private void processCommand(String line) {
-        if (line.equals("list")) {
-            printList();
-        } else if (line.equals("Mario")) {
-            handleMario();
-        } else if (line.startsWith("mark")) {
-            handleMark(line);
-        } else if (line.startsWith("todo")) {
-            handleTodo(line);
-        } else if (line.startsWith("deadline")) {
-            handleDeadline(line);
-        } else if (line.startsWith("event")) {
-            handleEvent(line);
-        } else {
-            addTask(line);
+        try {
+            if (line.equals("list")) {
+                printList();
+            } else if (line.equals("Mario")) {
+                handleMario();
+            } else if (line.startsWith("mark")) {
+                handleMark(line);
+            } else if (line.startsWith("todo")) {
+                handleTodo(line);
+            } else if (line.startsWith("deadline")) {
+                handleDeadline(line);
+            } else if (line.startsWith("event")) {
+                handleEvent(line);
+            }
+            else{
+                System.out.println("I dont understand what you mean");
+            }
         }
-
+        catch (Exception e) {
+            System.out.println("An error occurred: " + e.getMessage());
+        }
     }
 
     private void handleMario() {
@@ -76,18 +82,27 @@ public class Roshy {
     }
 
     private void handleMark(String line) {
+        if(hasNoDescription(line,"mark")){
+            return;
+        }
         int taskNum = Integer.parseInt(line.substring(5)) - 1;
         lister[taskNum].markAsDone();
         System.out.println("Nice Ive marked this as done!\n" + "[" + lister[taskNum].getStatusIcon() + "] " + lister[taskNum].description);
     }
 
     private void handleTodo(String line) {
+        if(hasNoDescription(line,"todo")){
+            return;
+        }
         lister[index] = new Todo(line.substring(5));
         index++;
         System.out.println("[T]" + "[" + lister[index - 1].getStatusIcon() + "] " + lister[index - 1].description);
     }
 
     private void handleDeadline(String line) {
+        if(hasNoDescription(line,"deadline")){
+            return;
+        }
         int slashIndex = line.indexOf("/");
         String byDate = line.substring(slashIndex + 4).trim();
         String description = line.substring(9, slashIndex).trim();
@@ -97,6 +112,9 @@ public class Roshy {
     }
 
     private void handleEvent(String line) {
+        if(hasNoDescription(line,"event")){
+            return;
+        }
         int slashIndex1 = line.indexOf("/");
         int slashIndex2 = line.indexOf("/", slashIndex1 + 1);
         String fromWhen = line.substring(slashIndex1 + 6, slashIndex2).trim();
@@ -111,6 +129,13 @@ public class Roshy {
         lister[index] = new Task(line);
         index++;
         System.out.println("added: " + line);
+    }
+    private boolean hasNoDescription(String line, String command){
+        if(line.trim().equals(command)){
+            System.out.println("You need a description for your " + command + " dumbo");
+            return true;
+        }
+        return false;
     }
 }
 
