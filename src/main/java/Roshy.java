@@ -1,10 +1,11 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Roshy {
     private static final String LOGO = "_____\n" + "|  \\/  | __ _ _ __(_) ___  \n" + "| |\\/| |/ _` | '__| |/ _ \\ \n" + "| |  | | (_| | |  | | (_) |\n" + "|_|  |_|\\__,_|_|  |_|\\___/ \n";
     private static final String BYE_MESSAGE = "Bye. Hope to see you again soon!";
 
-    private static final int MAX_TASKS = 100;
+    private static final int DELETE_PREFIX_LENGTH = 7;
     private static final int TODO_PREFIX_LENGTH = 5;       // "todo "
     private static final int DEADLINE_PREFIX_LENGTH = 9;   // "deadline "
     private static final int EVENT_PREFIX_LENGTH = 6;      // "event "
@@ -14,8 +15,7 @@ public class Roshy {
     private static final int TO_SLASH_OFFSET = 4;          // "/to "
 
     private Scanner scanner = new Scanner(System.in);
-    private Task[] tasks = new Task[MAX_TASKS];
-    private int taskCount = 0;
+    private ArrayList<Task> tasks = new ArrayList<>();
 
     public static void main(String[] args) {
         Roshy roshy = new Roshy();
@@ -30,21 +30,18 @@ public class Roshy {
                 break;
             }
             processCommand(line);
-            if (taskCount == MAX_TASKS) {
-                break;
-            }
         }
         System.out.println(BYE_MESSAGE);
     }
 
     private void printList() {
-        if (taskCount == 0) {
+        if (tasks.size() == 0) {
             System.out.println("No tasks yet!");
             return;
         }
         System.out.println("Here are the tasks in your list\n");
-        for (int i = 0; i < taskCount; i++) {
-            System.out.println((i + 1) + ": " + tasks[i].toString());
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println((i + 1) + ": " + tasks.get(i).toString());
         }
     }
 
@@ -60,6 +57,8 @@ public class Roshy {
                 handleDeadline(line);
             } else if (line.startsWith("event")) {
                 handleEvent(line);
+            } else if (line.startsWith("delete")) {
+                handleDelete(line);
             } else {
                 System.out.println("I don't understand what you mean");
             }
@@ -73,17 +72,17 @@ public class Roshy {
             return;
         }
         int taskNum = Integer.parseInt(line.substring(MARK_PREFIX_LENGTH)) - 1;
-        tasks[taskNum].markAsDone();
-        System.out.println("Nice I've marked this as done!\n" + tasks[taskNum].toString());
+        tasks.get(taskNum).markAsDone();
+        System.out.println("Nice I've marked this as done!\n" + tasks.get(taskNum).toString());
     }
 
     private void handleTodo(String line) {
         if (hasNoDescription(line, "todo")) {
             return;
         }
-        tasks[taskCount] = new Todo(line.substring(TODO_PREFIX_LENGTH));
-        taskCount++;
-        System.out.println(tasks[taskCount - 1].toString());
+        tasks.add(new Todo(line.substring(TODO_PREFIX_LENGTH)));
+        //gets the value in the index and converts it into a string
+        System.out.println(tasks.get(tasks.size() - 1).toString());
     }
 
     private void handleDeadline(String line) {
@@ -93,9 +92,8 @@ public class Roshy {
         int slashIndex = line.indexOf("/");
         String byDate = line.substring(slashIndex + BY_SLASH_OFFSET).trim();
         String description = line.substring(DEADLINE_PREFIX_LENGTH, slashIndex).trim();
-        tasks[taskCount] = new Deadline(description, byDate);
-        taskCount++;
-        System.out.println(tasks[taskCount - 1].toString());
+        tasks.add(new Deadline(description, byDate));
+        System.out.println(tasks.get(tasks.size() - 1).toString());
     }
 
     private void handleEvent(String line) {
@@ -107,9 +105,8 @@ public class Roshy {
         String fromWhen = line.substring(slashIndex1 + FROM_SLASH_OFFSET, slashIndex2).trim();
         String toWhen = line.substring(slashIndex2 + TO_SLASH_OFFSET).trim();
         String description = line.substring(EVENT_PREFIX_LENGTH, slashIndex1).trim();
-        tasks[taskCount] = new Event(description, toWhen, fromWhen);
-        taskCount++;
-        System.out.println(tasks[taskCount - 1].toString());
+        tasks.add(new Event(description, toWhen, fromWhen));
+        System.out.println(tasks.get(tasks.size() - 1).toString());
     }
 
     private boolean hasNoDescription(String line, String command) {
@@ -118,5 +115,11 @@ public class Roshy {
             return true;
         }
         return false;
+    }
+    private void handleDelete(String line){
+        int index = Integer.parseInt(line.substring(DELETE_PREFIX_LENGTH)) - 1;
+        Task deletedTask = tasks.get(index);
+        tasks.remove(index);
+        System.out.println("Noted. I have removed this task \n" + deletedTask + "\n Now you have " + tasks.size() + " tasks in the list" );
     }
 }
