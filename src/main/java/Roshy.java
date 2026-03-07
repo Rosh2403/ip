@@ -1,14 +1,21 @@
-
 import java.util.Scanner;
 
 public class Roshy {
-    private String logo = " __  __            _       \n" + "|  \\/  | __ _ _ __(_) ___  \n" + "| |\\/| |/ _` | '__| |/ _ \\ \n" + "| |  | | (_| | |  | | (_) |\n" + "|_|  |_|\\__,_|_|  |_|\\___/ \n";
-    private Scanner in = new Scanner(System.in);
+    private static final String LOGO = "_____\n" + "|  \\/  | __ _ _ __(_) ___  \n" + "| |\\/| |/ _` | '__| |/ _ \\ \n" + "| |  | | (_| | |  | | (_) |\n" + "|_|  |_|\\__,_|_|  |_|\\___/ \n";
+    private static final String BYE_MESSAGE = "Bye. Hope to see you again soon!";
+
     private static final int MAX_TASKS = 100;
-    private Task[] lister = new Task[MAX_TASKS];
-    private String separator = "    ____________________________________________________________";
-    private int index = 0;
-    //static final because this number is a constant and whenever an instance of Roshy is created we dont need to waste by creating another int = 100
+    private static final int TODO_PREFIX_LENGTH = 5;       // "todo "
+    private static final int DEADLINE_PREFIX_LENGTH = 9;   // "deadline "
+    private static final int EVENT_PREFIX_LENGTH = 6;      // "event "
+    private static final int MARK_PREFIX_LENGTH = 5;       // "mark "
+    private static final int BY_SLASH_OFFSET = 4;          // "/by "
+    private static final int FROM_SLASH_OFFSET = 6;        // "/from "
+    private static final int TO_SLASH_OFFSET = 4;          // "/to "
+
+    private Scanner scanner = new Scanner(System.in);
+    private Task[] tasks = new Task[MAX_TASKS];
+    private int taskCount = 0;
 
     public static void main(String[] args) {
         Roshy roshy = new Roshy();
@@ -16,40 +23,28 @@ public class Roshy {
     }
 
     public void run() {
-        System.out.println(logo + " Hello I'm Roshy\n What can I do for you?\n");
-        String line = "";
-        while (!line.equals("bye")) {
-            //reading the next line
-            line = in.nextLine();
-            //remove repetition
+        System.out.println(LOGO + " Hello I'm Roshy\n What can I do for you?\n");
+        while (true) {
+            String line = scanner.nextLine();
             if (line.equals("bye")) {
                 break;
             }
             processCommand(line);
-            if (index == MAX_TASKS) {
+            if (taskCount == MAX_TASKS) {
                 break;
             }
         }
-        System.out.println("BYEEE ITS Super Smash BROS TIME");
+        System.out.println(BYE_MESSAGE);
     }
 
     private void printList() {
-        if (index == 0) {
+        if (taskCount == 0) {
             System.out.println("No tasks yet!");
-        } else {
-            System.out.println("Here are the tasks in your list\n");
-            for (int i = 0; i < index; i++) {
-                if (lister[i] instanceof Deadline) {
-                    Deadline d = (Deadline) lister[i];
-                    System.out.println((i + 1) + ": [D][" + d.getStatusIcon() + "] " + d.description + " (by: " + d.getByDate() + ")");
-                } else if (lister[i] instanceof Todo) {
-
-                    System.out.println((i + 1) + ": [T][" + lister[i].getStatusIcon() + "] " + lister[i].description);
-                } else {
-                    // It's a regular Task
-                    System.out.println((i + 1) + ": [" + lister[i].getStatusIcon() + "] " + lister[i].description);
-                }
-            }
+            return;
+        }
+        System.out.println("Here are the tasks in your list\n");
+        for (int i = 0; i < taskCount; i++) {
+            System.out.println((i + 1) + ": " + tasks[i].toString());
         }
     }
 
@@ -57,8 +52,6 @@ public class Roshy {
         try {
             if (line.equals("list")) {
                 printList();
-            } else if (line.equals("Mario")) {
-                handleMario();
             } else if (line.startsWith("mark")) {
                 handleMark(line);
             } else if (line.startsWith("todo")) {
@@ -67,76 +60,63 @@ public class Roshy {
                 handleDeadline(line);
             } else if (line.startsWith("event")) {
                 handleEvent(line);
+            } else {
+                System.out.println("I don't understand what you mean");
             }
-            else{
-                System.out.println("I dont understand what you mean");
-            }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             System.out.println("An error occurred: " + e.getMessage());
         }
     }
 
-    private void handleMario() {
-        System.out.println(separator + "\n" + "Mario? MArioooooo LUIGIIIII MARIOOOO LUGIII MARIO" + logo + logo);
-    }
-
     private void handleMark(String line) {
-        if(hasNoDescription(line,"mark")){
+        if (hasNoDescription(line, "mark")) {
             return;
         }
-        int taskNum = Integer.parseInt(line.substring(5)) - 1;
-        lister[taskNum].markAsDone();
-        System.out.println("Nice Ive marked this as done!\n" + "[" + lister[taskNum].getStatusIcon() + "] " + lister[taskNum].description);
+        int taskNum = Integer.parseInt(line.substring(MARK_PREFIX_LENGTH)) - 1;
+        tasks[taskNum].markAsDone();
+        System.out.println("Nice I've marked this as done!\n" + tasks[taskNum].toString());
     }
 
     private void handleTodo(String line) {
-        if(hasNoDescription(line,"todo")){
+        if (hasNoDescription(line, "todo")) {
             return;
         }
-        lister[index] = new Todo(line.substring(5));
-        index++;
-        System.out.println("[T]" + "[" + lister[index - 1].getStatusIcon() + "] " + lister[index - 1].description);
+        tasks[taskCount] = new Todo(line.substring(TODO_PREFIX_LENGTH));
+        taskCount++;
+        System.out.println(tasks[taskCount - 1].toString());
     }
 
     private void handleDeadline(String line) {
-        if(hasNoDescription(line,"deadline")){
+        if (hasNoDescription(line, "deadline")) {
             return;
         }
         int slashIndex = line.indexOf("/");
-        String byDate = line.substring(slashIndex + 4).trim();
-        String description = line.substring(9, slashIndex).trim();
-        lister[index] = new Deadline(description, byDate);
-        index++;
-        System.out.println("[D]" + "[" + lister[index - 1].getStatusIcon() + "] " + lister[index - 1].description + " (by: " + byDate + ")");
+        String byDate = line.substring(slashIndex + BY_SLASH_OFFSET).trim();
+        String description = line.substring(DEADLINE_PREFIX_LENGTH, slashIndex).trim();
+        tasks[taskCount] = new Deadline(description, byDate);
+        taskCount++;
+        System.out.println(tasks[taskCount - 1].toString());
     }
 
     private void handleEvent(String line) {
-        if(hasNoDescription(line,"event")){
+        if (hasNoDescription(line, "event")) {
             return;
         }
         int slashIndex1 = line.indexOf("/");
         int slashIndex2 = line.indexOf("/", slashIndex1 + 1);
-        String fromWhen = line.substring(slashIndex1 + 6, slashIndex2).trim();
-        String toWhen = line.substring(slashIndex2 + 4).trim();
-        String description = line.substring(6, slashIndex1).trim();
-        lister[index] = new Event(description, fromWhen, toWhen);
-        index++;
-        System.out.println("[E]" + "[" + lister[index - 1].getStatusIcon() + "] " + lister[index - 1].description + " (from: " + fromWhen + " to: " + toWhen + ")");
+        String fromWhen = line.substring(slashIndex1 + FROM_SLASH_OFFSET, slashIndex2).trim();
+        String toWhen = line.substring(slashIndex2 + TO_SLASH_OFFSET).trim();
+        String description = line.substring(EVENT_PREFIX_LENGTH, slashIndex1).trim();
+        tasks[taskCount] = new Event(description, toWhen, fromWhen);
+        taskCount++;
+        System.out.println(tasks[taskCount - 1].toString());
     }
 
-    private void addTask(String line) {
-        lister[index] = new Task(line);
-        index++;
-        System.out.println("added: " + line);
-    }
-    private boolean hasNoDescription(String line, String command){
-        if(line.trim().equals(command)){
-            System.out.println("You need a description for your " + command + " dumbo");
+    private boolean hasNoDescription(String line, String command) {
+        if (line.trim().equals(command)) {
+            System.out.println("You need a description for your " + command);
             return true;
         }
         return false;
     }
 }
-
-
