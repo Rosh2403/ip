@@ -1,28 +1,32 @@
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.File;
+import java.io.FileWriter;
 
 public class Roshy {
     private static final String LOGO = "_____\n" + "|  \\/  | __ _ _ __(_) ___  \n" + "| |\\/| |/ _` | '__| |/ _ \\ \n" + "| |  | | (_| | |  | | (_) |\n" + "|_|  |_|\\__,_|_|  |_|\\___/ \n";
     private static final String BYE_MESSAGE = "Bye. Hope to see you again soon!";
 
     private static final int DELETE_PREFIX_LENGTH = 7;
-    private static final int TODO_PREFIX_LENGTH = 5;       // "todo "
-    private static final int DEADLINE_PREFIX_LENGTH = 9;   // "deadline "
-    private static final int EVENT_PREFIX_LENGTH = 6;      // "event "
-    private static final int MARK_PREFIX_LENGTH = 5;       // "mark "
-    private static final int BY_SLASH_OFFSET = 4;          // "/by "
-    private static final int FROM_SLASH_OFFSET = 6;        // "/from "
-    private static final int TO_SLASH_OFFSET = 4;          // "/to "
+    private static final int TODO_PREFIX_LENGTH = 5;
+    private static final int DEADLINE_PREFIX_LENGTH = 9;
+    private static final int EVENT_PREFIX_LENGTH = 6;
+    private static final int MARK_PREFIX_LENGTH = 5;
+    private static final int BY_SLASH_OFFSET = 4;
+    private static final int FROM_SLASH_OFFSET = 6;
+    private static final int TO_SLASH_OFFSET = 4;
 
     private Scanner scanner = new Scanner(System.in);
     private ArrayList<Task> tasks = new ArrayList<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Roshy roshy = new Roshy();
         roshy.run();
     }
 
-    public void run() {
+    public void run() throws IOException {
+        loadTasks();
         System.out.println(LOGO + " Hello I'm Roshy\n What can I do for you?\n");
         while (true) {
             String line = scanner.nextLine();
@@ -67,25 +71,26 @@ public class Roshy {
         }
     }
 
-    private void handleMark(String line) {
+    private void handleMark(String line) throws IOException {
         if (hasNoDescription(line, "mark")) {
             return;
         }
         int taskNum = Integer.parseInt(line.substring(MARK_PREFIX_LENGTH)) - 1;
         tasks.get(taskNum).markAsDone();
         System.out.println("Nice I've marked this as done!\n" + tasks.get(taskNum).toString());
+        saveTasks();
     }
 
-    private void handleTodo(String line) {
+    private void handleTodo(String line) throws IOException {
         if (hasNoDescription(line, "todo")) {
             return;
         }
         tasks.add(new Todo(line.substring(TODO_PREFIX_LENGTH)));
-        //gets the value in the index and converts it into a string
         System.out.println(tasks.get(tasks.size() - 1).toString());
+        saveTasks();
     }
 
-    private void handleDeadline(String line) {
+    private void handleDeadline(String line) throws IOException {
         if (hasNoDescription(line, "deadline")) {
             return;
         }
@@ -94,9 +99,10 @@ public class Roshy {
         String description = line.substring(DEADLINE_PREFIX_LENGTH, slashIndex).trim();
         tasks.add(new Deadline(description, byDate));
         System.out.println(tasks.get(tasks.size() - 1).toString());
+        saveTasks();
     }
 
-    private void handleEvent(String line) {
+    private void handleEvent(String line) throws IOException {
         if (hasNoDescription(line, "event")) {
             return;
         }
@@ -107,6 +113,7 @@ public class Roshy {
         String description = line.substring(EVENT_PREFIX_LENGTH, slashIndex1).trim();
         tasks.add(new Event(description, toWhen, fromWhen));
         System.out.println(tasks.get(tasks.size() - 1).toString());
+        saveTasks();
     }
 
     private boolean hasNoDescription(String line, String command) {
@@ -116,10 +123,58 @@ public class Roshy {
         }
         return false;
     }
-    private void handleDelete(String line){
+
+    private void handleDelete(String line) throws IOException {
         int index = Integer.parseInt(line.substring(DELETE_PREFIX_LENGTH)) - 1;
         Task deletedTask = tasks.get(index);
         tasks.remove(index);
-        System.out.println("Noted. I have removed this task \n" + deletedTask + "\n Now you have " + tasks.size() + " tasks in the list" );
+        System.out.println("Noted. I have removed this task\n" + deletedTask + "\nNow you have " + tasks.size() + " tasks in the list");
+        saveTasks();
+    }
+
+    private void saveTasks() throws IOException {
+        String text = "";
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i) instanceof Todo) {
+                text += "T | " + (tasks.get(i).isDone ? "1" : "0") + " | " + tasks.get(i).description + "\n";
+            } else if (tasks.get(i) instanceof Deadline) {
+                Deadline d = (Deadline) tasks.get(i);
+                text += "D | " + (tasks.get(i).isDone ? "1" : "0") + " | " + tasks.get(i).description + " | " + d.getByDate() + "\n";
+            } else if (tasks.get(i) instanceof Event) {
+                Event e = (Event) tasks.get(i);
+                text += "E | " + (tasks.get(i).isDone ? "1" : "0") + " | " + tasks.get(i).description + " | " + e.getFromWhen() + " | " + e.getToWhen() + "\n";
+            }
+        }
+        writeToFile("./data/roshy.txt", text);
+    }
+
+    private void writeToFile(String filePath, String text) throws IOException {
+        new File(filePath).getParentFile().mkdirs();
+        FileWriter fw = new FileWriter(filePath);
+        fw.write(text);
+        fw.close();
+    }
+
+    private void loadTasks() throws IOException {
+        File file = new File("./data/roshy.txt");
+        if (!file.exists()) {
+            return;
+        }
+        Scanner fileScanner = new Scanner(file);
+        while (fileScanner.hasNextLine()) {
+            String line = fileScanner.nextLine();
+            String[] parts = line.split(" \\| ");
+            if (parts[0].equals("T")) {
+                tasks.add(new Todo(parts[2]));
+            } else if (parts[0].equals("D")) {
+                tasks.add(new Deadline(parts[2], parts[3]));
+            } else if (parts[0].equals("E")) {
+                tasks.add(new Event(parts[2], parts[3], parts[4]));
+            }
+            if (parts[1].equals("1")) {
+                tasks.get(tasks.size() - 1).markAsDone();
+            }
+        }
+        fileScanner.close();
     }
 }
