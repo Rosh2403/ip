@@ -8,8 +8,8 @@ public abstract class Command {
     /**
      * Executes the command with the given task list, UI, and storage.
      *
-     * @param tasks the current task list
-     * @param ui the UI handler
+     * @param tasks   the current task list
+     * @param ui      the UI handler
      * @param storage the storage handler
      * @throws IOException if there is an error during execution
      */
