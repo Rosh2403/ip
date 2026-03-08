@@ -61,6 +61,12 @@ public class Parser {
             String fromWhen = line.substring(slashIndex1 + FROM_SLASH_OFFSET, slashIndex2).trim();
             String toWhen = line.substring(slashIndex2 + TO_SLASH_OFFSET).trim();
             return new AddEventCommand(description, fromWhen, toWhen);
+        } else if (line.startsWith("find")) {
+            if (line.trim().equals("find")) {
+                return new InvalidCommand("You need a keyword to search for");
+            }
+            String keyword = line.substring(5).trim();
+            return new FindCommand(keyword);
         } else {
             return new InvalidCommand("I don't understand what you mean");
         }
