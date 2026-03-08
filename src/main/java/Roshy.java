@@ -1,10 +1,17 @@
 import java.io.IOException;
-
+/**
+ * Main class for the Roshy chatbot application.
+ * Initializes the UI, storage, and task list, and runs the main command loop.
+ */
 public class Roshy {
     private Storage storage;
     private TaskList tasks;
     private Ui ui;
-
+    /**
+     * Constructs a Roshy instance with the given file path for storage.
+     *
+     * @param filePath path to the file used for saving and loading tasks
+     */
     public Roshy(String filePath) {
         ui = new Ui();
         storage = new Storage(filePath);
@@ -15,7 +22,9 @@ public class Roshy {
             tasks = new TaskList();
         }
     }
-
+    /**
+     * Runs the main loop of the chatbot, reading and executing commands until exit.
+     */
     public void run() {
         ui.showWelcome();
         boolean isExit = false;
