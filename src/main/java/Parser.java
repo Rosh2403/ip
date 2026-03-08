@@ -16,6 +16,7 @@ public class Parser {
      *
      * @param line the full input string from the user
      * @return the Command corresponding to the user input
+     * @throws RoshyException if the input is invalid
      */
     public static Command parse(String line) throws RoshyException {
         if (line.equals("bye")) {
@@ -53,6 +54,9 @@ public class Parser {
                 throw new RoshyException("You need a description for your deadline");
             }
             String byDate = line.substring(slashIndex + BY_SLASH_OFFSET).trim();
+            if (byDate.isEmpty()) {
+                throw new RoshyException("You need a date after /by");
+            }
             return new AddDeadlineCommand(description, byDate);
         } else if (line.startsWith("event")) {
             if (line.trim().equals("event")) {
@@ -68,7 +72,13 @@ public class Parser {
                 throw new RoshyException("You need a description for your event");
             }
             String fromWhen = line.substring(slashIndex1 + FROM_SLASH_OFFSET, slashIndex2).trim();
+            if (fromWhen.isEmpty()) {
+                throw new RoshyException("You need a start time after /from");
+            }
             String toWhen = line.substring(slashIndex2 + TO_SLASH_OFFSET).trim();
+            if (toWhen.isEmpty()) {
+                throw new RoshyException("You need an end time after /to");
+            }
             return new AddEventCommand(description, fromWhen, toWhen);
         } else if (line.startsWith("find")) {
             if (line.trim().equals("find")) {
