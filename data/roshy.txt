@@ -1,4 +1,5 @@
 T | 0 | n
-E | 0 | nt | nth | tmr
+E | 0 | nt | tmr | nth
 T | 0 | n
 T | 0 | m
+T | 0 | n
