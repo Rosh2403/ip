@@ -17,67 +17,67 @@ public class Parser {
      * @param line the full input string from the user
      * @return the Command corresponding to the user input
      */
-    public static Command parse(String line) {
+    public static Command parse(String line) throws RoshyException {
         if (line.equals("bye")) {
             return new ExitCommand();
         } else if (line.equals("list")) {
             return new ListCommand();
         } else if (line.startsWith("mark")) {
             if (line.trim().equals("mark")) {
-                return new InvalidCommand("You need a task number to mark");
+                throw new RoshyException("You need a task number to mark");
             }
             int index = Integer.parseInt(line.substring(MARK_PREFIX_LENGTH)) - 1;
             return new MarkCommand(index);
         } else if (line.startsWith("delete")) {
             if (line.trim().equals("delete")) {
-                return new InvalidCommand("You need a task number to delete");
+                throw new RoshyException("You need a task number to delete");
             }
             int index = Integer.parseInt(line.substring(DELETE_PREFIX_LENGTH)) - 1;
             return new DeleteCommand(index);
         } else if (line.startsWith("todo")) {
             if (line.trim().equals("todo")) {
-                return new InvalidCommand("You need a description for your todo");
+                throw new RoshyException("You need a description for your todo");
             }
             String description = line.substring(TODO_PREFIX_LENGTH);
             return new AddTodoCommand(description);
         } else if (line.startsWith("deadline")) {
             if (line.trim().equals("deadline")) {
-                return new InvalidCommand("You need a description for your deadline");
+                throw new RoshyException("You need a description for your deadline");
             }
             if (!line.contains("/by")) {
-                return new InvalidCommand("Deadline format: deadline <description> /by <date>");
+                throw new RoshyException("Deadline format: deadline <description> /by <date>");
             }
             int slashIndex = line.indexOf("/");
             String description = line.substring(DEADLINE_PREFIX_LENGTH, slashIndex).trim();
             if (description.isEmpty()) {
-                return new InvalidCommand("You need a description for your deadline");
+                throw new RoshyException("You need a description for your deadline");
             }
             String byDate = line.substring(slashIndex + BY_SLASH_OFFSET).trim();
             return new AddDeadlineCommand(description, byDate);
         } else if (line.startsWith("event")) {
             if (line.trim().equals("event")) {
-                return new InvalidCommand("You need a description for your event");
+                throw new RoshyException("You need a description for your event");
             }
             if (!line.contains("/from") || !line.contains("/to")) {
-                return new InvalidCommand("Event format: event <description> /from <start> /to <end>");
+                throw new RoshyException("Event format: event <description> /from <start> /to <end>");
             }
             int slashIndex1 = line.indexOf("/");
             int slashIndex2 = line.indexOf("/", slashIndex1 + 1);
             String description = line.substring(EVENT_PREFIX_LENGTH, slashIndex1).trim();
             if (description.isEmpty()) {
-                return new InvalidCommand("You need a description for your event");
+                throw new RoshyException("You need a description for your event");
             }
             String fromWhen = line.substring(slashIndex1 + FROM_SLASH_OFFSET, slashIndex2).trim();
             String toWhen = line.substring(slashIndex2 + TO_SLASH_OFFSET).trim();
             return new AddEventCommand(description, fromWhen, toWhen);
         } else if (line.startsWith("find")) {
             if (line.trim().equals("find")) {
-                return new InvalidCommand("You need a keyword to search for");
+                throw new RoshyException("You need a keyword to search for");
             }
             String keyword = line.substring(5).trim();
             return new FindCommand(keyword);
         } else {
-            return new InvalidCommand("I don't understand what you mean");
+            throw new RoshyException("I don't understand what you mean");
         }
     }
 }

@@ -34,6 +34,8 @@ public class Roshy {
                 Command c = Parser.parse(fullCommand);
                 c.execute(tasks, ui, storage);
                 isExit = c.isExit();
+            } catch (RoshyException e) {
+                ui.showError(e.getMessage());
             } catch (IOException e) {
                 ui.showError(e.getMessage());
             }
