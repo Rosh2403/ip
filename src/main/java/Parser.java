@@ -1,3 +1,6 @@
+/**
+ * Parses user input and returns the corresponding Command object.
+ */
 public class Parser {
     private static final int TODO_PREFIX_LENGTH = 5;
     private static final int DEADLINE_PREFIX_LENGTH = 9;
@@ -8,6 +11,12 @@ public class Parser {
     private static final int FROM_SLASH_OFFSET = 6;
     private static final int TO_SLASH_OFFSET = 4;
 
+    /**
+     * Parses the given input line and returns the appropriate Command.
+     *
+     * @param line the full input string from the user
+     * @return the Command corresponding to the user input
+     */
     public static Command parse(String line) {
         if (line.equals("bye")) {
             return new ExitCommand();
